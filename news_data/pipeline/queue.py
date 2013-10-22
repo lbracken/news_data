@@ -47,7 +47,7 @@ def init_config():
     global queue_user, queue_pass, queue_host, queue_port, queue_vhost
 
     config = ConfigParser.SafeConfigParser()
-    config.read("../settings.cfg")
+    config.read("settings.cfg")
 
     queue_user = config.get("rabbitmq", "queue_user")
     queue_pass = config.get("rabbitmq", "queue_pass")
