@@ -19,25 +19,29 @@ import bson
 import pymongo
 
 
+# These values set from config file
+db_host = None
+db_port = None
+
+
 def init_config():
     """ Read mongoDB connection settings from config file
 
     """
-    global db_host, db_name
+    global db_host, db_port
 
     config = ConfigParser.SafeConfigParser()
-    config.read("../settings.cfg")
+    config.read("settings.cfg")
 
     db_host = config.get("mongo", "db_host")
-    db_port = config.getint("mongo", "db_port")
-
-    print 'Connecting to mongoDB @ %s:%d' % (db_host, db_port)  
+    db_port = config.getint("mongo", "db_port")  
 
 
 def get_mongodb_connection():
+    print "  Connecting to mongoDB @ %s:%d" % (db_host, db_port)
+
     client = pymongo.MongoClient(db_host, db_port)
-    db = client["newsDataDB"]
-    return db
+    return client["newsDataDB"]
 
 
 def get_raw_articles():
@@ -67,4 +71,5 @@ def get_metric_data_monthly():
     return collection
 
 
+# Initialize config when loading module
 init_config()

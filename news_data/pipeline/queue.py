@@ -27,17 +27,17 @@ queue_port = None
 queue_vhost = None
 
 # Define Exchange, Routing Key and Queue names
-scanned_files_ex    = 'scanned_files_ex'
-scanned_files_rtkey = 'scanned_files_rtkey'
-scanned_files_queue = '01_scanned_files'
+scanned_files_ex = "scanned_files_ex"
+scanned_files_rtkey = "scanned_files_rtkey"
+scanned_files_queue = "01_scanned_files"
 
-parsed_files_ex    = 'parsed_files_ex'
-parsed_files_rtkey = 'parsed_files_rtkey'
-parsed_files_queue = '02_parsed_files'
+parsed_articles_ex = "parsed_articles_ex"
+parsed_articles_rtkey = "parsed_articles_rtkey"
+parsed_articles_queue = "02_parsed_articles"
 
-analyzed_articles_ex    = 'analyzed_articles_ex'
-analyzed_articles_rtkey = 'analyzed_articles_rtkey'
-analyzed_articles_queue = '03_analyzed_articles' 
+analyzed_articles_ex = "analyzed_articles_ex"
+analyzed_articles_rtkey = "analyzed_articles_rtkey"
+analyzed_articles_queue = "03_analyzed_articles"
 
 
 def init_config():
@@ -61,7 +61,7 @@ def init_connection():
     print "  Pika Version: %s" % pika.__version__
 
     logging.basicConfig(level=logging.WARN)
-    queue_conn_str = 'amqp://%s:%s@%s:%d/%s' % (queue_user, queue_pass,
+    queue_conn_str = "amqp://%s:%s@%s:%d/%s" % (queue_user, queue_pass,
             queue_host, queue_port, queue_vhost)
 
     queue_params = pika.URLParameters(queue_conn_str)
@@ -84,23 +84,23 @@ def init_queue(channel, exchange_name, routing_key_name, queue_name,
     if init_exchange_and_binding:
 
         channel.exchange_declare(
-            exchange=exchange_name,
-            type='direct',
-            passive=False,
-            durable=True,
-            auto_delete=False)
+                exchange=exchange_name,
+                type='direct',
+                passive=False,
+                durable=True,
+                auto_delete=False)
 
         channel.queue_bind(
-            queue=queue_name,
-            exchange=exchange_name,
-            routing_key=routing_key_name)
+                queue=queue_name,
+                exchange=exchange_name,
+                routing_key=routing_key_name)
 
 
 def publish(channel, exchange_name, routing_key_name, msg_body):
     channel.basic_publish(
-        exchange=exchange_name,
-        routing_key=routing_key_name,
-        body=msg_body)
+            exchange=exchange_name,
+            routing_key=routing_key_name,
+            body=msg_body)
 
     return True
 
@@ -120,14 +120,17 @@ def consume(channel, callback, queue_name):
 
 def init_scanned_files(channel, init_exchange_and_binding=False):
     init_queue(channel,
-        scanned_files_ex,
-        scanned_files_rtkey,
-        scanned_files_queue,
-        init_exchange_and_binding)
+            scanned_files_ex,
+            scanned_files_rtkey,
+            scanned_files_queue,
+            init_exchange_and_binding)
 
 
 def publish_scanned_file(channel, msg_body):
-    return publish(channel, scanned_files_ex, scanned_files_rtkey, msg_body)
+    return publish(channel,
+            scanned_files_ex,
+            scanned_files_rtkey,
+            msg_body)
 
 
 def consume_scanned_files(channel, callback):
@@ -136,19 +139,22 @@ def consume_scanned_files(channel, callback):
 
 
 
-def init_parsed_files(channel, init_exchange_and_binding=False):
+def init_parsed_articles(channel, init_exchange_and_binding=False):
     init_queue(channel,
-        parsed_files_ex,
-        parsed_files_rtkey,
-        parsed_files_queue,
-        init_exchange_and_binding)  
+            parsed_articles_ex,
+            parsed_articles_rtkey,
+            parsed_articles_queue,
+            init_exchange_and_binding)  
 
 
-def publish_parsed_file(channel, msg_body):
-    return publish(channel, parsed_files_ex, parsed_files_rtkey, msg_body)
+def publish_parsed_article(channel, msg_body):
+    return publish(channel,
+            parsed_articles_ex,
+            parsed_articles_rtkey,
+            msg_body)
 
 
-def consume_parsed_files(channel, callback):
+def consume_parsed_articles(channel, callback):
     consume(channel, callback, parsed_files_queue)
 
 
@@ -156,15 +162,17 @@ def consume_parsed_files(channel, callback):
 
 def init_analyzed_articles(channel, init_exchange_and_binding=False):
     init_queue(channel,
-        analyzed_articles_ex,
-        analyzed_articles_rtkey,
-        analyzed_articles_queue,
-        init_exchange_and_binding)  
+            analyzed_articles_ex,
+            analyzed_articles_rtkey,
+            analyzed_articles_queue,
+            init_exchange_and_binding)  
 
 
 def publish_analyzed_article(channel, msg_body):
-    return publish(channel, analyzed_articles_ex, analyzed_articles_rtkey,
-                   msg_body)
+    return publish(channel,
+            analyzed_articles_ex,
+            analyzed_articles_rtkey,
+            msg_body)
 
 
 def consume_analyzed_articles(channel, callback):
