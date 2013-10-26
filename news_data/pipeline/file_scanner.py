@@ -12,7 +12,7 @@
     :license: MIT, see LICENSE for more details.
 """
 
-import ConfigParser
+import argparse
 import os
 import re
 import sys
@@ -23,8 +23,11 @@ import queue
 # Constants
 scan_match_pattern = ".*html$"
 
+verbose = False
+updt_freq = 1000
 
-def add_scanned_file_to_queue(channel, filename, verbose=False):
+
+def add_scanned_file_to_queue(channel, filename):
     """ Publish the given filename to the queue
 
     """
@@ -42,13 +45,6 @@ def scan_directory(directory):
     print "  Starting scan..."
     print "  Directory: %s" % directory
 
-    config = ConfigParser.SafeConfigParser()
-    config.read("settings.cfg")
-
-    verbose = config.getboolean("global", "verbose")
-    status_update_freq = config.getint("global", "status_update_freq")
-
-
     files_queued = 0
 
     # Initialize a connection and channel to RabbitMQ
@@ -65,11 +61,11 @@ def scan_directory(directory):
 
             # Only queue files that match the pattern
             if re.match(scan_match_pattern, filename):
-                add_scanned_file_to_queue(channel, filename, verbose)
+                add_scanned_file_to_queue(channel, filename)
                 files_queued += 1
 
                 # Update status...
-                if files_queued % status_update_freq == 0:
+                if files_queued % updt_freq == 0:
                     print "    * Files Queued: %d..." % files_queued            
 
         # Ignore any svn dirs
@@ -84,13 +80,27 @@ def scan_directory(directory):
     print ""
 
 
+def parse_args():
+    """ Parse the command line arguments
+
+    """
+    global verbose, updt_freq
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("directory", help="Directory to scan for files")
+    parser.add_argument("-v", "--verbose", action='store_true',
+            help="Make the operation talkative")
+    parser.add_argument("-u", "--updt_freq", type=int, default=1000,
+            help="Frequency to print an update")    
+    args = parser.parse_args()   
+    
+    verbose = args.verbose
+    updt_freq = args.updt_freq
+    return args
+
 
 if __name__ == "__main__":
-    print "-----------------------------------------------< file_scanner >----"
+    args  = parse_args()  
 
-    if len(sys.argv) > 1:
-        dir_to_scan = sys.argv[1].strip()
-        scan_directory(dir_to_scan)
-        
-    else:
-        print "Usage: file_scanner DIR_TO_SCAN"
+    print "-----------------------------------------------< file_scanner >----"
+    scan_directory(args.directory)
