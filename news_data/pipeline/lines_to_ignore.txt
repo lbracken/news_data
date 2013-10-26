@@ -1,0 +1,10 @@
+###############################################################################
+# Lines to ignore when parsing articles
+#
+this is a rush transcript
+to order a video of this transcript
+(commercial break)
+(begin videotape)
+(begin video clip)
+(end videotape)
+(end video clip)
