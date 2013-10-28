@@ -57,7 +57,7 @@ def init_config():
 
 
 def init_connection():
-    print "  RabbitMQ Conn: %s@%s:%s" % (queue_user, queue_host, queue_port)
+    print "  Connecting to RabbitMQ as %s@%s:%s" % (queue_user, queue_host, queue_port)
     print "  Pika Version: %s" % pika.__version__
 
     logging.basicConfig(level=logging.WARN)
@@ -155,7 +155,7 @@ def publish_parsed_article(channel, msg_body):
 
 
 def consume_parsed_articles(channel, callback):
-    consume(channel, callback, parsed_files_queue)
+    consume(channel, callback, parsed_articles_queue)
 
 
 
