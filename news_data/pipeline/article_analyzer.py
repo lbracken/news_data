@@ -221,17 +221,16 @@ def parse_args():
     """
     global verbose, updt_freq
 
-    parser = argparse.ArgumentParser(description="")
-
-        #Listens to queue for files\
-        #    to parse, or optionally parse a given filename arguement.")
+    parser = argparse.ArgumentParser(description="Listens to queue for\
+            articles to analyze, or optionally analyze a given article\
+            id arguement.")
     parser.add_argument("-v", "--verbose", action='store_true',
             help="Make the operation talkative")
     parser.add_argument("-p", "--preview", action='store_true',
             help="Preview only, don't persist results.")
     parser.add_argument("-u", "--updt_freq", type=int, default=1000,
             help="Frequency to print an update")
-    parser.add_argument("-i", "--id", help="Id of article to parse")
+    parser.add_argument("-i", "--id", help="Id of article to analyze")
     args = parser.parse_args()   
     
     verbose = args.verbose
