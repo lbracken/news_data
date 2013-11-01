@@ -27,6 +27,7 @@ from datetime import timedelta
 import os
 import json
 import sys
+import traceback
 
 from bs4 import BeautifulSoup
 
@@ -99,10 +100,11 @@ def parse_article(filename, preview=False):
 
         # Calculate parsed content size
         size_raw = os.stat(filename).st_size
-        size_parsed = len(article["content"])         
+        size_parsed = len(article["content"])
         article["size_raw"] = size_raw
         article["size_parsed"] = size_parsed
-        article["size_ratio"] = float(size_raw) / float(size_parsed)
+        article["size_ratio"] = 0 if size_parsed <= 0 else\
+                float(size_raw) / float(size_parsed)
 
         # Write parsed file to DB.
         if preview:
@@ -128,8 +130,11 @@ def parse_article(filename, preview=False):
             print ""
             print article["content"]
 
-    except:
-       print 'Failed parsing the file: %s' % filename
+    except Exception, e: 
+        print "!! Failed parsing the file: %s" % filename
+        print "  %s" % str(e)
+        if verbose:
+            traceback.print_exc()
 
 
 def parse_date(filename):
