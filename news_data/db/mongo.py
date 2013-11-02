@@ -37,36 +37,37 @@ def init_config():
     db_port = config.getint("mongo", "db_port")  
 
 
-def get_mongodb_connection():
-    print "  Connecting to mongoDB @ %s:%d" % (db_host, db_port)
+def get_mongodb_connection(collection_name):
+    print "  Connecting to mongoDB @ %s:%d   newsDataDB.%s" % \
+            (db_host, db_port, collection_name)
 
     client = pymongo.MongoClient(db_host, db_port)
-    return client["newsDataDB"]
+    return client["newsDataDB"][collection_name]
 
 
 def get_raw_articles():
-    collection = get_mongodb_connection()["rawArticles"]
+    collection = get_mongodb_connection("rawArticles")
     return collection
 
 
 def get_parsed_articles():
-    collection = get_mongodb_connection()["parsedArticles"]
+    collection = get_mongodb_connection("parsedArticles")
     return collection
 
 
 def get_analyzed_articles():
-    collection = get_mongodb_connection()["analyzedArticles"]
+    collection = get_mongodb_connection("analyzedArticles")
     return collection
 
 
 def get_metric_data_daily():
-    collection = get_mongodb_connection()["metricDataDaily"]
+    collection = get_mongodb_connection("metricDataDaily")
     collection.ensure_index([('term', 1), ('date', 1)])
     return collection
 
 
 def get_metric_data_monthly():    
-    collection = get_mongodb_connection()["metricDataMonthly"]
+    collection = get_mongodb_connection("metricDataMonthly")
     collection.ensure_index('term', 1)
     return collection
 
