@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    news_data.frontend.news_data
+    news_data.news_data
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Provides Flask based template rendering and web service support for
