@@ -10,6 +10,7 @@
 """
 
 import calendar
+from datetime import datetime
 
 
 def get_days_in_month(yyyy, mm):
@@ -17,6 +18,13 @@ def get_days_in_month(yyyy, mm):
 
     """
     return calendar.monthrange(yyyy, mm)[1]
+
+
+def get_next_month(date_time):
+    if date_time.month == 12:
+        return datetime(date_time.year + 1, 1, 1)
+    else:
+        return datetime(date_time.year, date_time.month + 1, 1)
 
 
 def pad_month_day_value(to_pad):
