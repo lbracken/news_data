@@ -73,12 +73,17 @@ def get_db_stats():
         #    traceback.print_exc() 
         abort(400)
 
-    response_json = {}
-    response_json["raw_articles"] = \
+
+    response = {}
+    response["raw_articles"] = \
             stats_service.get_raw_articles_stats(time_start, time_end)
+    response["parsed_articles"] = \
+            stats_service.get_parsed_articles_stats(time_start, time_end)            
+    response["analyzed_articles"] = \
+            stats_service.get_analyzed_articles_stats(time_start, time_end)
 
     # Create the response object and setup headers
-    resp = make_response(jsonify(response_json))
+    resp = make_response(jsonify(response))
     return resp
 
 
