@@ -1,0 +1,23 @@
+/* news_data : https://github.com/lbracken/news_data
+   :license: MIT, see LICENSE for more details.
+*/
+body {
+  margin: 0px 25px 0px 25px;
+}
+
+table {
+  border: 0px;
+}
+
+table td {
+  text-align: center;
+}
+
+.total_count {
+  font-size: 1.4em;
+}
+
+.graph {
+  background-color: #EEE;
+  box-shadow: 2px 2px 1px #BBB;
+}
