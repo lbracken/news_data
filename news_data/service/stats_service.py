@@ -16,13 +16,13 @@ from db import mongo
 db_raw_articles = None
 db_parsed_articles = None
 db_analyzed_articles = None
-get_metric_data_daily = None
-get_metric_data_monthly = None
+db_metric_data_daily = None
+db_metric_data_monthly = None
 
 
 def init_db():
     global db_raw_articles, db_parsed_articles, db_analyzed_articles,\
-            get_metric_data_daily, get_metric_data_monthly
+            db_metric_data_daily, db_metric_data_monthly
 
     # Init DB
     db_raw_articles = mongo.get_raw_articles()
@@ -31,6 +31,31 @@ def init_db():
     db_metric_data_daily = mongo.get_metric_data_daily()
     db_metric_data_monthly = mongo.get_metric_data_monthly()
 
+
+def get_collection_counts(time_start, time_end):
+    """ Get counts of each collection.
+
+    """
+    time_bound_query = create_time_bound_query(time_start, time_end)
+    response = {
+        "total_parsed_articles" : 
+                db_parsed_articles.find(time_bound_query).count(),
+        "total_analyzed_articles" : 
+                db_analyzed_articles.find(time_bound_query).count(),
+        "total_metric_data_daily" : 
+                db_metric_data_daily.count(),    #TODO: Limit to time range
+        "total_metric_data_monthly" : 
+                db_metric_data_monthly.count()   #TODO: Limit to time range
+    }
+
+    # Raw articles are a special case, requires an aggregation
+    response["total_raw_articles"] = db_raw_articles.aggregate([
+        {"$match" : time_bound_query},      
+        {"$project" : {"count" : "$count"}},
+        {"$group" : {"_id" : 1, "total_count" : {"$sum" : "$count"}}}
+    ]).get("result")[0].get("total_count")
+
+    return response
 
 def get_raw_articles_stats(time_start, time_end):
     """ Get stats about raw_articles from mongoDB
@@ -107,6 +132,14 @@ def get_parsed_articles_stats(time_start, time_end):
         response["size_ratio_min"].append(dp["size_ratio_min"])
         response["size_ratio_max"].append(dp["size_ratio_max"])
 
+    # To work around RaphaelJS Graph bug, show ratio
+    # as 0-100 instead # of 0.0 to 1.0
+    for i in range (len(response["size_ratio_avg"])):
+        response["size_ratio_avg"][i] = int(response["size_ratio_avg"][i]*100)
+        response["size_ratio_min"][i] = int(response["size_ratio_min"][i]*100)
+        response["size_ratio_max"][i] = int(response["size_ratio_max"][i]*100)
+
+
     return response
 
 
@@ -167,10 +200,11 @@ def get_analyzed_articles_stats(time_start, time_end):
 
 
 def get_metric_data_daily_stats(time_start, time_end):
-    return None
+    return {}
+
 
 def get_metric_data_monthly_stats(time_start, time_end):
-    return None
+    return {}
 
 
 def create_time_bound_query(time_start, time_end):

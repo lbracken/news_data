@@ -68,23 +68,24 @@ def get_db_stats():
         # If there are problems reading the request arguments, then
         # the request is bad.  Return a 400 HTTP Status Code - Bad
         # Request
-        #if verbose:
-        #    print "  %s" % str(e)
-        #    traceback.print_exc() 
+        if verbose:
+            print "  %s" % str(e)
+            traceback.print_exc() 
         abort(400)
 
+    # Create the response by getting the counts of each collection
+    response = stats_service.get_collection_counts(time_start, time_end)
 
-    response = {}
+    # Popualte the response with stats from each collection...    
     response["raw_articles"] = \
             stats_service.get_raw_articles_stats(time_start, time_end)
     response["parsed_articles"] = \
-            stats_service.get_parsed_articles_stats(time_start, time_end)            
+            stats_service.get_parsed_articles_stats(time_start, time_end)
     response["analyzed_articles"] = \
             stats_service.get_analyzed_articles_stats(time_start, time_end)
+    # TODO: Provide metric data stats...
 
-    # Create the response object and setup headers
-    resp = make_response(jsonify(response))
-    return resp
+    return make_response(jsonify(response))
 
 
 def get_time_start_from_request(request):
