@@ -10,8 +10,10 @@
     :license: MIT, see LICENSE for more details.
 """
 
-from db import mongo
+from datetime import datetime
+from datetime import timedelta
 
+from db import mongo
 
 db_raw_articles = None
 db_parsed_articles = None
@@ -32,10 +34,11 @@ def init_db():
     db_metric_data_monthly = mongo.get_metric_data_monthly()
 
 
-def get_collection_counts(time_start, time_end):
+def get_collection_counts(time_start, time_end, verbose=False):
     """ Get counts of each collection.
 
     """
+    start_time = datetime.now()
     time_bound_query = create_time_bound_query(time_start, time_end)
     response = {
         "total_parsed_articles" : 
@@ -55,24 +58,35 @@ def get_collection_counts(time_start, time_end):
         {"$group" : {"_id" : 1, "total_count" : {"$sum" : "$count"}}}
     ]).get("result")[0].get("total_count")
 
+    if verbose:
+        print "  - %sms for get_collection_counts()" % \
+                (datetime.now() - start_time)
+
     return response
 
-def get_raw_articles_stats(time_start, time_end):
+
+def get_raw_articles_stats(time_start, time_end, verbose=False):
     """ Get stats about raw_articles from mongoDB
 
     """
+    start_time = datetime.now()
     time_bound_query = create_time_bound_query(time_start, time_end)
     response = {"count" : []}
     for count in db_raw_articles.find(time_bound_query).sort("published"):
         response["count"].append(count["count"])
 
+    if verbose:
+        print "  - %sms for get_raw_articles_stats()" % \
+                (datetime.now() - start_time)
+
     return response
 
 
-def get_parsed_articles_stats(time_start, time_end):
+def get_parsed_articles_stats(time_start, time_end, verbose=False):
     """ Get stats about parsed_articles from mongoDB
 
     """
+    start_time = datetime.now()
     time_bound_query = create_time_bound_query(time_start, time_end)
     parsed_articles_stats = db_parsed_articles.aggregate([
         {"$match" : time_bound_query},
@@ -139,14 +153,18 @@ def get_parsed_articles_stats(time_start, time_end):
         response["size_ratio_min"][i] = int(response["size_ratio_min"][i]*100)
         response["size_ratio_max"][i] = int(response["size_ratio_max"][i]*100)
 
+    if verbose:
+        print "  - %sms for get_parsed_articles_stats()" % \
+                (datetime.now() - start_time)
 
     return response
 
 
-def get_analyzed_articles_stats(time_start, time_end):
+def get_analyzed_articles_stats(time_start, time_end, verbose=False):
     """ Get stats about analyzed_articles from mongoDB
 
     """
+    start_time = datetime.now()
     time_bound_query = create_time_bound_query(time_start, time_end)    
     analyzed_articles_stats = db_analyzed_articles.aggregate([
         {"$match" : time_bound_query},      
@@ -196,14 +214,27 @@ def get_analyzed_articles_stats(time_start, time_end):
         response["total_terms_min"].append(dp["total_terms_min"])
         response["total_terms_max"].append(dp["total_terms_max"])
 
+    if verbose:
+        print "  - %sms for get_analyzed_articles_stats()" % \
+                (datetime.now() - start_time)    
+
     return response
 
 
-def get_metric_data_daily_stats(time_start, time_end):
+def get_metric_data_daily_stats(time_start, time_end, verbose=False):
+    start_time = datetime.now()
+    if verbose:
+        print "  - %sms for get_metric_data_daily_stats()" % \
+                (datetime.now() - start_time)    
+
     return {}
 
 
-def get_metric_data_monthly_stats(time_start, time_end):
+def get_metric_data_monthly_stats(time_start, time_end, verbose=False):
+    start_time = datetime.now()
+    if verbose:
+        print "  - %sms for get_metric_data_monthly_stats()" % \
+                (datetime.now() - start_time)    
     return {}
 
 
