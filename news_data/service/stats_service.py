@@ -10,19 +10,21 @@
     :license: MIT, see LICENSE for more details.
 """
 
-from db import mongo
+from datetime import datetime
+from datetime import timedelta
 
+from db import mongo
 
 db_raw_articles = None
 db_parsed_articles = None
 db_analyzed_articles = None
-get_metric_data_daily = None
-get_metric_data_monthly = None
+db_metric_data_daily = None
+db_metric_data_monthly = None
 
 
 def init_db():
     global db_raw_articles, db_parsed_articles, db_analyzed_articles,\
-            get_metric_data_daily, get_metric_data_monthly
+            db_metric_data_daily, db_metric_data_monthly
 
     # Init DB
     db_raw_articles = mongo.get_raw_articles()
@@ -32,22 +34,59 @@ def init_db():
     db_metric_data_monthly = mongo.get_metric_data_monthly()
 
 
-def get_raw_articles_stats(time_start, time_end):
+def get_collection_counts(time_start, time_end, verbose=False):
+    """ Get counts of each collection.
+
+    """
+    start_time = datetime.now()
+    time_bound_query = create_time_bound_query(time_start, time_end)
+    response = {
+        "total_parsed_articles" : 
+                db_parsed_articles.find(time_bound_query).count(),
+        "total_analyzed_articles" : 
+                db_analyzed_articles.find(time_bound_query).count(),
+        "total_metric_data_daily" : 
+                db_metric_data_daily.count(),    #TODO: Limit to time range
+        "total_metric_data_monthly" : 
+                db_metric_data_monthly.count()   #TODO: Limit to time range
+    }
+
+    # Raw articles are a special case, requires an aggregation
+    response["total_raw_articles"] = db_raw_articles.aggregate([
+        {"$match" : time_bound_query},      
+        {"$project" : {"count" : "$count"}},
+        {"$group" : {"_id" : 1, "total_count" : {"$sum" : "$count"}}}
+    ]).get("result")[0].get("total_count")
+
+    if verbose:
+        print "  - %sms for get_collection_counts()" % \
+                (datetime.now() - start_time)
+
+    return response
+
+
+def get_raw_articles_stats(time_start, time_end, verbose=False):
     """ Get stats about raw_articles from mongoDB
 
     """
+    start_time = datetime.now()
     time_bound_query = create_time_bound_query(time_start, time_end)
     response = {"count" : []}
     for count in db_raw_articles.find(time_bound_query).sort("published"):
         response["count"].append(count["count"])
 
+    if verbose:
+        print "  - %sms for get_raw_articles_stats()" % \
+                (datetime.now() - start_time)
+
     return response
 
 
-def get_parsed_articles_stats(time_start, time_end):
+def get_parsed_articles_stats(time_start, time_end, verbose=False):
     """ Get stats about parsed_articles from mongoDB
 
     """
+    start_time = datetime.now()
     time_bound_query = create_time_bound_query(time_start, time_end)
     parsed_articles_stats = db_parsed_articles.aggregate([
         {"$match" : time_bound_query},
@@ -107,13 +146,25 @@ def get_parsed_articles_stats(time_start, time_end):
         response["size_ratio_min"].append(dp["size_ratio_min"])
         response["size_ratio_max"].append(dp["size_ratio_max"])
 
+    # To work around RaphaelJS Graph bug, show ratio
+    # as 0-100 instead # of 0.0 to 1.0
+    for i in range (len(response["size_ratio_avg"])):
+        response["size_ratio_avg"][i] = int(response["size_ratio_avg"][i]*100)
+        response["size_ratio_min"][i] = int(response["size_ratio_min"][i]*100)
+        response["size_ratio_max"][i] = int(response["size_ratio_max"][i]*100)
+
+    if verbose:
+        print "  - %sms for get_parsed_articles_stats()" % \
+                (datetime.now() - start_time)
+
     return response
 
 
-def get_analyzed_articles_stats(time_start, time_end):
+def get_analyzed_articles_stats(time_start, time_end, verbose=False):
     """ Get stats about analyzed_articles from mongoDB
 
     """
+    start_time = datetime.now()
     time_bound_query = create_time_bound_query(time_start, time_end)    
     analyzed_articles_stats = db_analyzed_articles.aggregate([
         {"$match" : time_bound_query},      
@@ -163,14 +214,28 @@ def get_analyzed_articles_stats(time_start, time_end):
         response["total_terms_min"].append(dp["total_terms_min"])
         response["total_terms_max"].append(dp["total_terms_max"])
 
+    if verbose:
+        print "  - %sms for get_analyzed_articles_stats()" % \
+                (datetime.now() - start_time)    
+
     return response
 
 
-def get_metric_data_daily_stats(time_start, time_end):
-    return None
+def get_metric_data_daily_stats(time_start, time_end, verbose=False):
+    start_time = datetime.now()
+    if verbose:
+        print "  - %sms for get_metric_data_daily_stats()" % \
+                (datetime.now() - start_time)    
 
-def get_metric_data_monthly_stats(time_start, time_end):
-    return None
+    return {}
+
+
+def get_metric_data_monthly_stats(time_start, time_end, verbose=False):
+    start_time = datetime.now()
+    if verbose:
+        print "  - %sms for get_metric_data_monthly_stats()" % \
+                (datetime.now() - start_time)    
+    return {}
 
 
 def create_time_bound_query(time_start, time_end):
