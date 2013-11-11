@@ -24,7 +24,9 @@ from flask import make_response
 from flask import render_template
 from flask import request
 
+import date_util
 from service import stats_service
+from service import metrics_service
 
 app = Flask(__name__)
 verbose = False
@@ -43,12 +45,61 @@ def db_stats_page():
 
 @app.route("/get_term_counts")
 def get_term_counts():
-    return "term_counts"
+    # TODO: Better error message for invalid requests...
+
+    # Sample URL (Year 2000 Presidental Candidates)
+    # http://localhost:5000/get_term_counts?terms=bush,gore,nader&time_start=946702800&time_end=978238800
+    
+    # Read and validate request arguments
+    try:
+        terms = get_terms_from_request(request)
+        time_start = get_time_start_from_request(request)
+        time_end = get_time_end_from_request(request)
+        is_download = get_is_download_from_request(request)
+
+        if verbose:
+            print "-----------------------get_term_counts"
+            print 'Terms:  %s' % terms
+            print "Start:  %s" % time_start
+            print "End:    %s" % time_end            
+  
+        # Ensure the request parameters are valid, otherwise return a 400
+        if len(terms) == 0 or not is_valid_time_range(time_start, time_end):
+            abort(400)
+
+    except Exception,e :
+        # If there are problems reading the request arguments, then
+        # the request is bad.  Return a 400 HTTP Status Code - Bad
+        # Request
+        if verbose:
+            print "  %s" % str(e)
+            traceback.print_exc() 
+        abort(400)
+
+    # Get term counts for the response
+    term_counts, granularity = metrics_service.get_term_counts(
+            terms, time_start, time_end, verbose)
+    
+    #Construct the response body
+    response_body = {
+        "time_start"  : date_util.get_timestamp(time_start),
+        "time_end"    : date_util.get_timestamp(time_end),
+        "granularity" : granularity,        
+        "terms"       : term_counts
+    }
+
+    # Create the response object and setup headers
+    response = make_response(jsonify(response_body))
+
+    if is_download:
+        response.headers["Content-Disposition"] = \
+                "attachment; filename=terms_data.json"
+
+    return response
 
 
 @app.route("/get_db_stats")
 def get_db_stats():
-    # TODO: Require password to access data...
     # TODO: Update queries to restrict to counts of daily and monthly METRIC data
 
     # Read and validate request arguments
@@ -56,7 +107,7 @@ def get_db_stats():
         time_start = get_time_start_from_request(request)
         time_end = get_time_end_from_request(request)
         if verbose:
-            print "-----------------------getDBStats"
+            print "-----------------------get_db_stats"
             print "Start:  %s" % time_start
             print "End:    %s" % time_end
   
@@ -105,6 +156,30 @@ def get_time_end_from_request(request):
     time_end_ms = request.args.get("time_end", 0)
     time_end = datetime.fromtimestamp(int(time_end_ms))
     return time_end
+
+
+def get_terms_from_request(request):
+    """ Returns the list of terms provided in the request.
+
+    """
+    terms = []
+    raw_terms = request.args.get("terms", "").split(",")
+
+    # Sanitize terms, and add non-empty elements to the list
+    for term in raw_terms:
+        term = term.strip().lower()
+        if not term == "":
+            terms.append(term)
+
+    return terms
+
+
+def get_is_download_from_request(request):
+    """ Returns true if request is for a download, false otherwise.
+
+    """
+    is_download = request.args.get("download", "").strip().lower()
+    return ("true" == is_download)
 
 
 def is_valid_time_range(time_start, time_end):

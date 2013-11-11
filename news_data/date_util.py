@@ -27,9 +27,26 @@ def get_next_month(date_time):
         return datetime(date_time.year, date_time.month + 1, 1)
 
 
+def get_timestamp(date_time):
+    """ Return the UTC timestamp for the given date
+
+    """
+    return int(date_time.strftime("%s"))
+
+
 def pad_month_day_value(to_pad):
-    ''' Pads the given month or day value with a preceding '0' if
+    """ Pads the given month or day value with a preceding '0' if
         needed. For example, turns 2 into '02.  Returned result will
         always be a string
-    '''
+    """
     return str(to_pad if to_pad > 9 else "0%d" % to_pad)
+
+
+def is_same_month(month_1, month_2):
+    """ Return true if the two given dates are in the same month
+
+    """
+    if (month_1 == None or month_2 == None):
+        return False
+
+    return (month_1.month == month_2.month) and (month_1.year == month_2.year)
