@@ -168,7 +168,7 @@ def get_monthly_term_data(term, time_start, time_end, granularity):
         if val > max_val:
             max_val = val
         
-        curr_month = get_next_month(curr_month)
+        curr_month = date_util.get_next_month(curr_month)
 
     # Calculate the final average
     if data_pts > 0:
