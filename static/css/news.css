@@ -74,6 +74,10 @@ body {
   overflow-x: hidden;
   padding-right: 20px;
 }
+  
+* html .ui-autocomplete {
+  height: 300px;  /* For IE6 -- since it doesn't support max-height */
+}
 
 #addTermLoading {}
 
@@ -86,4 +90,64 @@ body {
 
 #addTermButton {
   margin-right: 20px; 
+}
+
+#graphHeader {
+}
+
+#termsSection {
+  float: left;
+  margin-top: 5px;
+  width: 600px;
+}
+
+.termsListItem {
+  float: left;
+  position: relative;
+  padding: 0.25em 35px 0.25em 0.5em; 
+  margin: .5em 0em 0em 1em;
+  color: #FFF;
+  font-size: 1.4em;
+  overflow: hidden;
+  white-space: nowrap;  
+  border-radius: 3px;
+  box-shadow: 2px 2px 2px #CCC, 0 0 40px rgba(0, 0, 0, 0.4) inset;
+  cursor: pointer;
+}
+
+.termsListItem-hover {
+  margin-top: 0em;
+  padding-bottom: .75em; /* Equal to margin-top + padding-bottom */
+}
+
+.termsListItem-Close {
+  position: absolute;
+  top: 0;
+  right: 2px; 
+}
+
+#termsTotal {
+  float: right;
+  width: 250px;
+  border-left: 1px solid #CCC;
+  padding-left: 15px;
+  margin: 5px 15px 0px 15px;
+}
+
+#termsBarChart {
+}
+
+#graphSection {
+  width: 900px;
+}
+
+#timeSeriesGraph {
+  background-color: #eee;
+  border: 2px solid #D1D1C8;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px #EBEBD7;
+}
+
+#downloadIcon {
+  margin-right: 0.4em;
 }
