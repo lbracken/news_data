@@ -45,10 +45,9 @@ img {border: none;}
   border-top: 1px dotted #666;
   margin: auto;
   padding-top: .5em;
+  color: #666 !important;
 }
 
-#footer A:link    {color: #666; text-decoration: none;}
-#footer A:visited {color: #666; text-decoration: none;}
-#footer A:hover   {color: #666; text-decoration: underline;}
-#footer A:active  {color: #666; outline: none;}
-#footer A:focus   {-moz-outline-style: none;}
+#footer A:link, A:visited, A:hover, A:active {
+  color: #666 !important;
+}
